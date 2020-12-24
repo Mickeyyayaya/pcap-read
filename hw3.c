@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <net/ethernet.h>
 #include <arpa/inet.h>
 #include <time.h>
 #include "Color.h"
@@ -15,6 +16,9 @@
 #define IFSZ 16
 #define FLTRSZ 120
 #define MAXHOSTSZ 256
+
+
+
 
 int packets = 0;   /* running count of packets read in */
 
@@ -25,7 +29,7 @@ int packets = 0;   /* running count of packets read in */
 #define SIZE_ETHERNET 14
 
 /* Ethernet addresses are 6 bytes */
-#define ETHER_ADDR_LEN	6
+//#define ETHER_ADDR_LEN	6
 
 /* Ethernet header */
 struct sniff_ethernet {
@@ -249,7 +253,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
     	ltime = localtime(&header->ts.tv_sec);
     	strftime(timestr, sizeof(timestr), "%Y/%m/%d %H:%M:%S", ltime);
 	printf(BOLDYELLOW"   Time:  %s\n"RESET,timestr);
-
+	
 
 	/* define ethernet header */
 	ethernet = (struct sniff_ethernet*)(packet);
@@ -262,8 +266,28 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *pa
         printf(BOLDBLUE"   MAC address:\n"RESET);
         printf("       From: %s\n", mac2str(ethernet->ether_shost));
         printf("         To: %s\n", mac2str(ethernet->ether_dhost));
-        
-
+		if( ntohs(ethernet->ether_type) == ETHERTYPE_IP)
+			printf(BOLDRED"        Ethernet type: IP\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_PUP)
+			printf(BOLDRED"        Ethernet type: Xerox PUP\n"RESET);
+        else if( ntohs(ethernet->ether_type) == ETHERTYPE_SPRITE)
+			printf(BOLDRED"        Ethernet type: Sprite\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_ARP)
+			printf(BOLDRED"        Ethernet type: ARP\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_REVARP)
+			printf(BOLDRED"        Ethernet type: Reverse ARP\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_AT)
+			printf(BOLDRED"        Ethernet type: AppleTalk protocol\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_AARP)
+			printf(BOLDRED"        Ethernet type: AppleTalk ARP\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_VLAN)
+			printf(BOLDRED"        Ethernet type: IEEE 802.1Q VLAN tagging\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_IPX)
+			printf(BOLDRED"        Ethernet type: IPX\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_IPV6)
+			printf(BOLDRED"        Ethernet type: IP protocol version 6\n"RESET);
+		else if( ntohs(ethernet->ether_type) == ETHERTYPE_LOOPBACK)
+			printf(BOLDRED"        Ethernet type: Used to test interfaces \n"RESET);
 	/* determine protocol */
         printf(BOLDBLUE"   Protocal:"RESET);
 	switch(ip->ip_p) {
